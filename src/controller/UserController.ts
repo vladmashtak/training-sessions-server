@@ -1,27 +1,49 @@
-import { getRepository } from 'typeorm';
 import { Application, NextFunction, Request, Response } from 'express';
+import { inject, injectable } from 'inversify';
 import { RegistrableController } from './RegisterableController';
-import { User } from '../entity/User';
+import { UserService } from '../service/UserService';
+import TYPES from '../types';
+import { UserDTO } from '../entity/User';
 
+@injectable()
 export class UserController implements RegistrableController {
-  private userRepository = getRepository(User);
+  private userService: UserService;
+
+  constructor(@inject(TYPES.UserService) userService: UserService) {
+    this.userService = userService;
+  }
 
   public register(app: Application): void {
+    app.route('/users')
+      .get(this.all)
+      .post(this.save);
+
+    app.route('/users/:id')
+      .get(this.one)
+      .delete(this.delete);
   }
 
   private async all(request: Request, response: Response, next: NextFunction) {
-    return this.userRepository.find();
+    const users: Array<UserDTO> = await this.userService.getUsers();
+
+    response.send(JSON.stringify(users));
   }
 
   private async one(request: Request, response: Response, next: NextFunction) {
-    return this.userRepository.findOneById(request.params.id);
+    const user: UserDTO = await this.userService.getUser(request.params['id']);
+
+    response.send(JSON.stringify(user));
   }
 
   private async save(request: Request, response: Response, next: NextFunction) {
-    return this.userRepository.save(request.body);
+    const user: UserDTO = await this.userService.saveUser(request.body);
+
+    response.send(JSON.stringify(user));
   }
 
-  private async remove(request: Request, response: Response, next: NextFunction) {
-    await this.userRepository.removeById(request.params.id);
+  private async delete(request: Request, response: Response, next: NextFunction) {
+    await this.userService.deleteUser(request.params['id']);
+
+    response.send();
   }
 }

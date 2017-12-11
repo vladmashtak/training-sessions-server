@@ -1,18 +1,25 @@
-import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+
+export interface UserDTO {
+  id?: number;
+  firstName: string;
+  lastName: string;
+  age: number;
+}
 
 @Entity()
-export class User {
+export class User implements UserDTO {
 
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    firstName: string;
+  @Column()
+  firstName: string;
 
-    @Column()
-    lastName: string;
+  @Column()
+  lastName: string;
 
-    @Column()
-    age: number;
+  @Column()
+  age: number;
 
 }
